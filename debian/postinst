@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# see: dh_installdeb(1)
+
+if [ ! -z "${DEBUG}" ]; then
+  set -x
+else
+  set -e
+fi
+
+. /usr/share/debconf/confmodule
+
+# if this script aborts with an error dpkg can
+# hang if daemons have been started
+trap db_stop EXIT
+
+GEM_BIN="/opt/puppetlabs/puppet/bin/gem"
+GEM_DIR="/opt/puppetlabs/puppet/share/gems"
+
+if [ ! -x "${GEM_BIN}" ]; then
+  echo "warning: ${GEM_BIN} not found, skipping local gem install" >&2
+  exit 0
+fi
+
+gem_file="$(ls -1 "${GEM_DIR}"/kafo-*.gem 2>/dev/null | sort -V | tail -n1 || true)"
+if [ -n "${gem_file}" ]; then
+  "${GEM_BIN}" install --local "${gem_file}" >/dev/null && sed -i "s/next if line\.start_with\?.*$/next if line.start_with?('#') || line.empty?/" /opt/puppetlabs/puppet/lib/ruby/gems/*/gems/kafo-7.8.0/lib/kafo/data_type_parser.rb
+else
+  echo "warning: no kafo-*.gem found in ${GEM_DIR}, skipping local gem install" >&2
+fi
+
+#DEBHELPER#
+
+exit 0

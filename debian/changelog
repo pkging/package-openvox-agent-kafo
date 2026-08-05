@@ -1,0 +1,13 @@
+openvox-agent-kafo (7.8.0-1) stable; urgency=low
+
+  * Release 7.8.0
+  * Rename package
+  * Remove OpenVox 7 support
+
+ -- Lennart Betz <lennart.betz@netways.de>  Sat, 31 Aug 2024 16:25:19 +0200
+
+puppet-agent-kafo (7.5.0-1) stable; urgency=low
+
+  * Release 7.5.0
+
+ -- Lennart Betz <lennart.betz@netways.de>  Sat, 31 Aug 2024 16:25:19 +0200

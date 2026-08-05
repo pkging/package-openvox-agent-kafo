@@ -1,0 +1,39 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE=1
+#
+# Uncomment to ignore all test failures (but the tests will run anyway)
+#export DH_RUBY_IGNORE_TESTS=all
+#
+# Uncomment to ignore some test failures (but the tests will run anyway).
+# Valid values:
+#export DH_RUBY_IGNORE_TESTS=ruby1.8 ruby1.9.1 require-rubygems
+#
+# If you need to specify the .gemspec (eg there is more than one)
+#export DH_RUBY_GEMSPEC=gem.gemspec
+
+GEM_NAME := kafo
+UPSTREAM_VERSION := $(shell dpkg-parsechangelog -SVersion | sed 's/-[^-]*$$//')
+GEM_FILE := $(GEM_NAME)-$(UPSTREAM_VERSION).gem
+ALT_GEM_FILE := openvox-agent-${GEM_NAME}-$(UPSTREAM_VERSION).gem
+GEM_CACHE_DIR := /opt/puppetlabs/puppet/share/gems
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	@if [ ! -f "$(GEM_FILE)" ] && [ ! -f "$(ALT_GEM_FILE)" ]; then \
+	  echo "Missing upstream gem. Run: uscan --download-current-version --force-download --destdir ." >&2; \
+	  echo "Expected one of: $(GEM_FILE) or $(ALT_GEM_FILE)" >&2; \
+	  exit 1; \
+	fi
+
+override_dh_auto_install:
+	set -e; \
+	gem_file=""; \
+	if [ -f "$(GEM_FILE)" ]; then \
+	  gem_file="$(GEM_FILE)"; \
+	elif [ -f "$(ALT_GEM_FILE)" ]; then \
+	  gem_file="$(ALT_GEM_FILE)"; \
+	fi; \
+	install -d debian/tmp$(GEM_CACHE_DIR); \
+	install -m 0644 "$$gem_file" debian/tmp$(GEM_CACHE_DIR)/

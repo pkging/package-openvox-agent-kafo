@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# see: dh_installdeb(1)
+
+if [ ! -z "${DEBUG}" ]; then
+  set -x
+else
+  set -e
+fi
+
+. /usr/share/debconf/confmodule
+
+# if this script aborts with an error dpkg can
+# hang if daemons have been started
+trap db_stop EXIT
+
+GEM_BIN="/opt/puppetlabs/puppet/bin/gem"
+GEM_DIR="/opt/puppetlabs/puppet/share/gems"
+
+case "$1" in
+  remove|purge)
+    if [ ! -x "${GEM_BIN}" ]; then
+      exit 0
+    fi
+
+    gem_file="$(ls -1 "${GEM_DIR}"/kafo-*.gem 2>/dev/null | sort -V | tail -n1 || true)"
+    if [ -n "${gem_file}" ]; then
+      gem_version="$(basename "${gem_file}" .gem | sed 's/^kafo-//')"
+      "${GEM_BIN}" uninstall -x -v "${gem_version}" kafo >/dev/null || true
+    fi
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

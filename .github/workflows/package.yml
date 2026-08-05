@@ -1,0 +1,30 @@
+name: Build package-openvox-agent-kafo
+
+on:
+  push:
+    branches: [ '**' ]
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: pkging/ci-workflows/.github/workflows/package.yml@main
+    with:
+      ci_workflows_ref: "main"
+      runner_labels: '["self-hosted","pkging"]'
+      source_event_name: ${{ github.event_name }}
+      source_ref_name: ${{ github.ref_name }}
+      source_ref_type: ${{ github.ref_type }}
+      matrix: |
+        el8: x86_64
+        el9: x86_64
+        el10: x86_64
+        fedora43: x86_64
+        fedora44: x86_64
+        debian11: amd64
+        debian12: amd64
+        debian13: amd64
+        ubuntu22: amd64
+        ubuntu24: amd64
+    secrets: inherit
