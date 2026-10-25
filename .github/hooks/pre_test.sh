@@ -40,7 +40,7 @@ if is_el || is_fedora; then
     fail_unsupported "Konnte RPM-Distribution nicht klassifizieren (ID=${ID}, ID_LIKE=${ID_LIKE}, RELEASE=${RELEASE})."
   fi
 
-  dnf install -y --allowerasing ca-certificates curl
+  command -v curl >/dev/null 2>&1 || dnf install -y --allowerasing ca-certificates curl
   if ! curl -fsSI "${release_url}" >/dev/null; then
     fail_unsupported "Release-Paket nicht erreichbar: ${release_url}."
   fi
@@ -52,18 +52,18 @@ elif is_debian || is_ubuntu; then
 
   if is_debian; then
     case "${RELEASE}" in
-      10|11|12|13) ;;
+      12|13) ;;
       *)
-        fail_unsupported "OpenVox 8 Release-Paket fuer Debian ${RELEASE} ist nicht in der Allowlist. Unterstuetzte Debian-Versionen: 10, 11, 12, 13."
+        fail_unsupported "OpenVox 8 Release-Paket fuer Debian ${RELEASE} ist nicht in der Allowlist. Unterstuetzte Debian-Versionen: 12, 13."
         ;;
     esac
     release_pkg="openvox8-release-debian${RELEASE}.deb"
     packages_pkg="prefork-packages_1.0.0-1+debian${RELEASE}_all.deb"
   else
     case "${VERSION_ID}" in
-      18.04|20.04|22.04|24.04|25.04|26.04) ;;
+      22.04|24.04|26.04) ;;
       *)
-        fail_unsupported "OpenVox 8 Release-Paket fuer Ubuntu ${VERSION_ID} ist nicht in der Allowlist. Unterstuetzte Ubuntu-Versionen: 18.04, 20.04, 22.04, 24.04, 25.04, 26.04."
+        fail_unsupported "OpenVox 8 Release-Paket fuer Ubuntu ${VERSION_ID} ist nicht in der Allowlist. Unterstuetzte Ubuntu-Versionen: 22.04, 24.04, 26.04."
         ;;
     esac
     release_pkg="openvox8-release-ubuntu${VERSION_ID}.deb"
@@ -73,8 +73,10 @@ elif is_debian || is_ubuntu; then
   release_url="https://apt.voxpupuli.org/${release_pkg}"
   log "Installing release package: ${release_url}"
 
-  apt-get update -y
-  apt-get install -y --no-install-recommends ca-certificates curl
+  if ! command -v curl >/dev/null 2>&1; then
+    apt-get update -y
+    apt-get install -y --no-install-recommends ca-certificates curl
+  fi
 
   if ! curl -fsSI "${release_url}" >/dev/null; then
     fail_unsupported "Release-Paket nicht erreichbar: ${release_url}."
